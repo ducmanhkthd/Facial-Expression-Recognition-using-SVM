@@ -25,6 +25,8 @@ def train(epochs=HYPERPARAMS.epochs, random_state=HYPERPARAMS.random_state,
             # Training phase
             print( "building model...")
             model = SVC(random_state=random_state, max_iter=epochs, kernel=kernel, decision_function_shape=decision_function, gamma=gamma)
+            # model = SVC(random_state=random_state, max_iter=epochs, kernel=kernel,
+            #             decision_function_shape=decision_function, gamma=gamma, coef0=0.0, shrinking=True, probability=True)
 
             print( "start training...")
             print( "--")
