@@ -51,37 +51,72 @@ def sliding_hog_windows(image):
 
 
 def predict(image, model, shape_predictor=None):
-    # Get hog
-    features = sliding_hog_windows(image)
+    if NETWORK.use_hog_sliding_window_and_landmarks:
+        # Get hog
+        features = sliding_hog_windows(image)
 
-    # Get landmakr
-    face_rects = [dlib.rectangle(left=1, top=1, right=47, bottom=47)]
-    face_landmarks = get_landmarks(image, face_rects)
+        # Get landmakr
+        face_rects = [dlib.rectangle(left=1, top=1, right=47, bottom=47)]
+        face_landmarks = get_landmarks(image, face_rects)
 
-    # Build vector
-    print(face_landmarks.shape)
-    face_landmarks = face_landmarks.flatten()
-    X = face_landmarks  # .reshape(136,1)
-    print(X.shape)
-    # print(X)
-    features = np.array(features).flatten()
-    features = features.reshape(1, 2592)
-    # print(features.shape)
-    X = np.concatenate((X, features), axis=1)
-    tensor_image = X  # np.expand_dims(X,axis=2) #X.reshape(-1,) #image.reshape([-1, 48,48, 1])
-    print(tensor_image.shape)
-    print("---333---")
-    print(*tensor_image, sep=' ')
-    # print("---444---")
-    # print(*features.reshape((1, -1)), sep=' ')
-    # print("---666---")
-    predicted_label = model.predict(tensor_image)
-    print("predicted_label",*predicted_label, sep=' ')
+        # Build vector
+        print(face_landmarks.shape)
+        face_landmarks = face_landmarks.flatten()
+        X = face_landmarks  # .reshape(136,1)
+        print(X.shape)
+        # print(X)
+        features = np.array(features).flatten()
+        features = features.reshape(1, 2592)
+        # print(features.shape)
+        X = np.concatenate((X, features), axis=1)
+        tensor_image = X  # np.expand_dims(X,axis=2) #X.reshape(-1,) #image.reshape([-1, 48,48, 1])
+        print(tensor_image.shape)
+        print("---333---")
+        print(*tensor_image, sep=' ')
+        # print("---444---")
+        # print(*features.reshape((1, -1)), sep=' ')
+        # print("---666---")
+        predicted_label = model.predict(tensor_image)
+        print("predicted_label",*predicted_label, sep=' ')
 
-    y_pred_2 = model.predict_proba(tensor_image)
+        y_pred_2 = model.predict_proba(tensor_image)
 
-    return get_emotion(y_pred_2[0])
+        return get_emotion(y_pred_2[0])
+   else:
+        face_rects = [dlib.rectangle(left=1, top=1, right=47, bottom=47)]
+        face_landmarks = get_landmarks_SVM(image, face_rects)
+        hog_features, _ = hog(image, orientations=8, pixels_per_cell=(16, 16),
+                                    cells_per_block=(1, 1), visualize=True)
+        hog_features = np.asarray(hog_features)
+        print("--",hog_features)
+        face_landmarks = face_landmarks.flatten()
+        print("face_landmarks",face_landmarks)
+        features = np.concatenate((face_landmarks, hog_features))
+        features = features.reshape(1, 2592)
 
+        # Build vector
+        print(face_landmarks.shape)
+        face_landmarks = face_landmarks.flatten()
+        X = face_landmarks  # .reshape(136,1)
+        print(X.shape)
+        # print(X)
+        features = np.array(features).flatten()
+        features = features.reshape(1, 2592)
+        # print(features.shape)
+        X = np.concatenate((X, features), axis=1)
+        tensor_image = X  # np.expand_dims(X,axis=2) #X.reshape(-1,) #image.reshape([-1, 48,48, 1])
+        print(tensor_image.shape)
+        print("---333---")
+        print(*tensor_image, sep=' ')
+        # print("---444---")
+        # print(*features.reshape((1, -1)), sep=' ')
+        # print("---666---")
+        predicted_label = model.predict(tensor_image)
+        print("predicted_label",*predicted_label, sep=' ')
+
+        y_pred_2 = model.predict_proba(tensor_image)
+
+        return get_emotion(y_pred_2[0])
 
 def get_emotion(label):
     if VIDEO_PREDICTOR.print_emotions:
